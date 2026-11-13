@@ -31,8 +31,8 @@ def test_persist_rejected_users(mock_create_engine):
 
     result = persist_rejected_users(
         rejected_users,
-        "postgresql://test:test@localhost/test",
-        "123e4567-e89b-12d3-a456-426614174000"
+        "123e4567-e89b-12d3-a456-426614174000",
+        "postgresql://test:test@localhost/test"
     )
 
     assert result == 1

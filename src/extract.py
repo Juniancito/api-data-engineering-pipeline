@@ -56,6 +56,3 @@ def extract_users(api_url: str)-> list[dict]:
             raise RuntimeError(
                 f"Failed to extract users from API: {exc}"
             ) from exc
-
-
-    return data

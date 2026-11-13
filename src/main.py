@@ -10,6 +10,7 @@ from src.validation import validate_users
 from src.transform import transform_users
 from src.load import load_users
 from src.rejected import persist_rejected_users
+from src.audit import start_pipeline_run, finish_pipeline_run
 
 
 logging.basicConfig(
@@ -31,67 +32,88 @@ def main():
 
     pipeline_run_id = str(uuid4())
 
+    metrics = {
+        "records_extracted": 0,
+        "records_valid": 0,
+        "records_rejected": 0,
+        "records_transformed": 0,
+        "records_loaded": 0
+    }
+
+    start_pipeline_run(pipeline_run_id, database_url)
+
     logger.info(
-        "Starting ETL pipeline. Run ID: %s",
+        "Pipeline started. Run ID: %s",
         pipeline_run_id
     )
 
-    # Extract
-    raw_users = extract_users(api_url)
+    try:
+        # Extract
+        raw_users = extract_users(api_url)
+        metrics["records_extracted"] = len(raw_users)
 
-    logger.info(
-        "Extracted users: %d",
-        len(raw_users)
-    )
+        # Validate
+        valid_users, rejected_users = validate_users(raw_users)
 
-    # Validate
-    valid_users, rejected_users = validate_users(raw_users)
+        metrics["records_valid"] = len(valid_users)
+        metrics["records_rejected"] = len(rejected_users)
 
-    logger.info(
-        "Validated users: %d",
-        len(valid_users)
-    )
+        # Persist rejected records
+        persist_rejected_users(
+            rejected_users,
+            pipeline_run_id,
+            database_url
+        )
 
-    logger.warning(
-        "Rejected users: %d",
-        len(rejected_users)
-    )
+        # Transform
+        transformed_users = transform_users(valid_users)
 
-    # Persist rejected records
-    persisted_rejected = persist_rejected_users(
-        rejected_users,
-        pipeline_run_id,
-        database_url
-    )
+        metrics["records_transformed"] = len(transformed_users)
 
-    logger.info(
-        "Persisted rejected users: %d",
-        persisted_rejected
-    )
+        # Load
+        loaded = load_users(transformed_users, database_url)
 
-    # Transform
-    transformed_users = transform_users(valid_users)
+        metrics["records_loaded"] = loaded
 
-    logger.info(
-        "Transformed users: %d",
-        len(transformed_users)
-    )
+        final_status = (
+            "PARTIAL" if rejected_users else "SUCCESS"
+        )
 
-    # Load
-    loaded = load_users(
-        transformed_users,
-        database_url
-    )
+        finish_pipeline_run(
+            pipeline_run_id,
+            database_url,
+            final_status,
+            **metrics
+        )
 
-    logger.info(
-        "Loaded users into database: %d",
-        loaded
-    )
+        logger.info(
+            "Pipeline completed. Status: %s | Metrics: %s | Run ID: %s",
+            final_status,
+            metrics,
+            pipeline_run_id
+        )
 
-    logger.info(
-        "ETL process completed. Run ID: %s",
-        pipeline_run_id
-    )
+    except Exception as exc:
+        logger.exception(
+            "Pipeline execution failed. Run ID: %s",
+            pipeline_run_id
+        )
+
+        try:
+            finish_pipeline_run(
+                pipeline_run_id,
+                database_url,
+                "FAILED",
+                error_message=str(exc),
+                **metrics
+            )
+        except Exception:
+            logger.exception(
+                "Could not persist pipeline failure audit. Run ID: %s",
+                pipeline_run_id
+            )
+
+        raise
 
 
 if __name__ == "__main__":
