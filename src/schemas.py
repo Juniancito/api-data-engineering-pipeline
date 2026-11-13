@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class AddressSchema(BaseModel):
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
-    ty: str | None = None 
+    city: str | None = None 
 
 class CompanySchema(BaseModel):
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
