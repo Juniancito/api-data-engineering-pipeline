@@ -19,6 +19,7 @@ def test_validate_valid_user():
     assert len(valid) == 1
     assert len(rejected) == 0
     assert valid[0]["id"] == 1
+    assert valid[0]["address"]["city"] == "Medellin"
 
 
 def test_validate_invalid_email():

@@ -54,7 +54,7 @@ def extract_users(api_url: str)-> list[dict]:
 
         except requests.RequestException as exc:
             raise RuntimeError(
-                f"Failed to fetch users from API: {exc}"
+                f"Failed to extract users from API: {exc}"
             ) from exc
 
 
