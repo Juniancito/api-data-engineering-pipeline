@@ -1,4 +1,5 @@
 
+from multiprocessing import connection
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,6 +22,16 @@ def test_start_pipeline_run(mock_create_engine):
     start_pipeline_run(RUN_ID, DATABASE_URL)
 
     assert connection.execute.call_count == 2
+
+    calls = connection.execute.call_args_list
+
+    assert "CREATE TABLE IF NOT EXISTS pipeline_runs" in str(calls[0].args[0])
+    assert "INSERT INTO pipeline_runs" in str(calls[1].args[0])
+
+    assert calls[1].args[1] == {
+        "pipeline_run_id": RUN_ID
+    }
+
     engine.dispose.assert_called_once()
 
 
@@ -48,6 +59,14 @@ def test_finish_pipeline_run(mock_create_engine):
     )
 
     connection.execute.assert_called_once()
+
+    params = connection.execute.call_args.args[1]
+
+    assert params["pipeline_run_id"] == RUN_ID
+    assert params["status"] == "SUCCESS"
+    assert params["records_extracted"] == 10
+    assert params["records_loaded"] == 10
+
     engine.dispose.assert_called_once()
 
 
