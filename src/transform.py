@@ -1,43 +1,59 @@
 import pandas as pd
 
+OUTPUT_COLUMNS = [
+
+    "user_id",
+    "name",
+    "username",
+    "email",
+    "city",
+    "company",
+
+]
+
+SOURCE_COLUMNS = [
+
+    "id",
+    "name",
+    "username",
+    "email",
+    "address.city",
+    "company.name",
+
+]
+
+
 def transform_users(users: list[dict]) -> pd.DataFrame:
     """
-    Transforms a list of user dictionaries into a pandas DataFrame.
-
-    Args:
-        users (list[dict]): A list of user dictionaries.
+    Normalize and clean user records.
 
     Returns:
-        pd.DataFrame: A DataFrame containing the transformed user data.
+        pd.DataFrame: Cleaned users with a consistent schema.
     """
+
+    if not users:
+        return pd.DataFrame(columns=OUTPUT_COLUMNS)
 
     df = pd.json_normalize(users)
 
-    df = df[
-        [
-            "id",
-            "name",
-            "username",
-            "email",
-            "address.city",
-            "company.name",
-        ]
-    ].copy()
+    df = df.reindex(columns=SOURCE_COLUMNS)
 
-    df.columns = [
-        "user_id",
-        "name",
-        "username",
-        "email",
-        "city",
-        "company",
-    ]
+    df.columns = OUTPUT_COLUMNS
 
-    df["email"] = df["email"].str.lower().str.strip()
-    df["name"] = df["name"].str.strip()
+    # Normalize text fields.
+    df["name"] = df["name"].astype("string").str.strip()
+    df["email"] = (
+        df["email"]
+        .astype("string")
+        .str.strip()
+        .str.lower()
+    )
 
+    # Remove records without a valid user ID or email
     df = df.dropna(subset=["user_id", "email"])
-    df = df.drop_duplicates(subset=["user_id"])    
+    df = df[df["email"].ne("")]
 
-    
-    return df
+    # Keep only the first occurrence of each user ID
+    df = df.drop_duplicates(subset=["user_id"], keep="first")
+
+    return df.reset_index(drop=True)
