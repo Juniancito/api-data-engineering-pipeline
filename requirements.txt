@@ -4,3 +4,4 @@ sqlalchemy
 psycopg[binary]
 python-dotenv
 pytest
+pydantic[email]>=2,<3
