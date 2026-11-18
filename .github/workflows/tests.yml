@@ -54,6 +54,6 @@ jobs:
       - name: Run Ruff
         run: ruff check .
 
-      - name: Run tests
+      - name: Run tests and coverage
         run: |
-          python -m pytest -v
+          python -m pytest --cov=src --cov-report=term-missing --cov-fail-under=90
