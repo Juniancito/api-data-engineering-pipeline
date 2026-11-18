@@ -1,17 +1,16 @@
 
-import os
 import logging
-
+import os
 from uuid import uuid4
+
 from dotenv import load_dotenv
 
+from src.audit import finish_pipeline_run, start_pipeline_run
 from src.extract import extract_users
-from src.validation import validate_users
-from src.transform import transform_users
 from src.load import load_users
 from src.rejected import persist_rejected_users
-from src.audit import start_pipeline_run, finish_pipeline_run
-
+from src.transform import transform_users
+from src.validation import validate_users
 
 logging.basicConfig(
     level=logging.INFO,

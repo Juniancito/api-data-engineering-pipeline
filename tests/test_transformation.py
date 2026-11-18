@@ -1,5 +1,6 @@
 import pandas as pd
-from src.transform import transform_users, OUTPUT_COLUMNS
+
+from src.transform import OUTPUT_COLUMNS, transform_users
 
 """ Test for users transformation function."""
 

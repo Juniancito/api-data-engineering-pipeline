@@ -48,5 +48,5 @@ def test_extract_users_invalid_response(mock_session_factory):
 
     mock_session.get.return_value = mock_response
 
-    with pytest.raises(ValueError, match="Expected a list"):
+    with pytest.raises(TypeError, match="Expected a list"):
         extract_users("https://example.com/users")

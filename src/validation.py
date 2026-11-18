@@ -1,5 +1,7 @@
 from pydantic import ValidationError
+
 from src.schemas import UserSchema
+
 
 def validate_users(users: list[dict]) -> tuple[list[dict], list[dict]]:
     """

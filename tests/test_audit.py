@@ -1,11 +1,9 @@
 
-from multiprocessing import connection
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.audit import start_pipeline_run, finish_pipeline_run
-
+from src.audit import finish_pipeline_run, start_pipeline_run
 
 RUN_ID = "123e4567-e89b-12d3-a456-426614174000"
 DATABASE_URL = "postgresql://test:test@localhost/test"

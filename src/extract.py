@@ -1,8 +1,8 @@
 import requests
-
 from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
+
 
 def create_http_session() -> Session:
     """
@@ -46,7 +46,7 @@ def extract_users(api_url: str)-> list[dict]:
             data = response.json()
 
             if not isinstance(data, list):
-                raise ValueError(
+                raise TypeError(
                     "Expected a list of users from the API response"
                 )
 

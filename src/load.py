@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 
+
 def load_users(df: pd.DataFrame, database_url: str) -> int:
 
     engine = create_engine(database_url)
